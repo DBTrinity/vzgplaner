@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">vzgplaner</string>
+    <string name="access_token" translatable="false">pk.eyJ1IjoibWFyY2wiLCJhIjoiY2pvNG16ZTY5MTV3MDNwcGFyZmFlY3YwaCJ9.WV0jl52vrOMTTg0JEzSFnw</string>
 </resources>
