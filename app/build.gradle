@@ -30,4 +30,5 @@ dependencies {
 
     implementation group: 'org.osmdroid', name: 'osmdroid-android', version: '6.0.3'
     implementation group: 'com.github.MKergall.osmbonuspack', name: 'OSMBonusPack', version: 'v5.8.1'
+    implementation group: 'de.grundid.opendatalab', name: 'geojson-jackson', version: '1.8.1'
 }

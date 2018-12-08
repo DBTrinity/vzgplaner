@@ -2,27 +2,27 @@ package mindbox.db.vzgplaner;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.geojson.Feature;
+import org.geojson.FeatureCollection;
+import org.geojson.Point;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.bonuspack.kml.KmlDocument;
-import org.osmdroid.bonuspack.kml.Style;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.FolderOverlay;
+import org.osmdroid.views.overlay.Marker;
 
-import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.stream.Collectors;
 
 public class MainActivity extends Activity {
     MapView map = null;
@@ -73,24 +73,62 @@ public class MainActivity extends Activity {
 
         KmlDocument kmlDocument = new KmlDocument();
 
+
         InputStream is = getResources().openRawResource(R.raw.railwaystationnodes);
-        String jsonString = new BufferedReader(new InputStreamReader(is)).lines()
-                .parallel().collect(Collectors.joining("\n"));
 
-        kmlDocument.parseGeoJSON(jsonString);
+        FeatureCollection featureCollection = null;
+        try {
+            featureCollection =
+                    new ObjectMapper().readValue(is, FeatureCollection.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        Drawable defaultMarker = getResources().getDrawable(R.drawable.marker_default);
-        Bitmap defaultBitmap = ((BitmapDrawable) defaultMarker).getBitmap();
-        Style defaultStyle = new Style(defaultBitmap, 0x901010AA, 5f, 0x20AA1010);
-        FolderOverlay geoJsonOverlay = (FolderOverlay) kmlDocument.mKmlRoot.buildOverlay(map, defaultStyle, null, kmlDocument);
+
+//        String jsonString = new BufferedReader(new InputStreamReader(is)).lines()
+//                .parallel().collect(Collectors.joining("\n"));
+//        kmlDocument.parseGeoJSON(jsonString);
+
+
+//        Set<String> strings = kmlDocument.mKmlRoot.mItems.get(0).mExtendedData.keySet();
+
+//        featureCollection.getFeatures().stream().filter(i -> i.getProperties().get(""))
+
+        for (Feature f : featureCollection.getFeatures()) {
+            Point point = (Point) f.getGeometry();
+            Marker marker = new Marker(map);
+            marker.setPosition(new GeoPoint(point.getCoordinates().getLatitude(), point.getCoordinates().getLongitude(), point.getCoordinates().getAltitude()));
+            marker.setTextIcon((String) f.getProperty("code"));
+//            marker.setTextIcon(String.valueOf(f.getProperty("geographicalName")));
+            marker.setTextLabelFontSize(30);
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+            marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker item, MapView arg1) {
+                    item.showInfoWindow();
+                    Log.i("bla", "onMarkerClick: ");
+                    return true;
+                }
+            });
+            map.getOverlays().add(marker);
+            map.invalidate();
+
+        }
+
+
+//
+//        Drawable defaultMarker = getResources().getDrawable(R.drawable.marker_default);
+//        Bitmap defaultBitmap = ((BitmapDrawable) defaultMarker).getBitmap();
+//        Style defaultStyle = new Style(defaultBitmap, 0x901010AA, 5f, 0x20AA1010);
+//        FolderOverlay geoJsonOverlay = (FolderOverlay) kmlDocument.mKmlRoot.buildOverlay(map, defaultStyle, null, kmlDocument);
+//
+//        map.getOverlays().add(geoJsonOverlay);
 
         IMapController mapController = map.getController();
         mapController.setZoom(9.5);
         GeoPoint startPoint = new GeoPoint(52.520008, 13.404954);
         mapController.setCenter(startPoint);
 
-        map.getOverlays().add(geoJsonOverlay);
-        map.invalidate();
     }
 
     public void onResume() {
