@@ -5,6 +5,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -20,6 +24,8 @@ import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.infowindow.InfoWindow;
+import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,7 +80,7 @@ public class MainActivity extends Activity {
         KmlDocument kmlDocument = new KmlDocument();
 
 
-        InputStream is = getResources().openRawResource(R.raw.railwaystationnodes);
+        InputStream is = getResources().openRawResource(R.raw.result);
 
         FeatureCollection featureCollection = null;
         try {
@@ -100,8 +106,14 @@ public class MainActivity extends Activity {
             marker.setPosition(new GeoPoint(point.getCoordinates().getLatitude(), point.getCoordinates().getLongitude(), point.getCoordinates().getAltitude()));
             marker.setTextIcon((String) f.getProperty("code"));
 //            marker.setTextIcon(String.valueOf(f.getProperty("geographicalName")));
-            marker.setTextLabelFontSize(30);
+            marker.setTextLabelFontSize(50);
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+//            InfoWindow infoWindow = new MyInfoWindow(R.layout.bonuspack_bubble, map);
+//            marker.setInfoWindow(infoWindow);
+//            InfoWindow markerWindowInfo = new MarkerInfoWindow(R.layout.info_window,map);
+//            TextView textView = markerWindowInfo.getView().findViewById(R.id.textview);
+//            textView.setText("HALLO");
+//            marker.setInfoWindow(markerWindowInfo);
             marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker item, MapView arg1) {
@@ -114,15 +126,6 @@ public class MainActivity extends Activity {
             map.invalidate();
 
         }
-
-
-//
-//        Drawable defaultMarker = getResources().getDrawable(R.drawable.marker_default);
-//        Bitmap defaultBitmap = ((BitmapDrawable) defaultMarker).getBitmap();
-//        Style defaultStyle = new Style(defaultBitmap, 0x901010AA, 5f, 0x20AA1010);
-//        FolderOverlay geoJsonOverlay = (FolderOverlay) kmlDocument.mKmlRoot.buildOverlay(map, defaultStyle, null, kmlDocument);
-//
-//        map.getOverlays().add(geoJsonOverlay);
 
         IMapController mapController = map.getController();
         mapController.setZoom(9.5);
@@ -147,5 +150,32 @@ public class MainActivity extends Activity {
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().save(this, prefs);
         map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
+    }
+
+    private class MyInfoWindow extends MarkerInfoWindow{
+        public MyInfoWindow(int layoutResId, MapView mapView) {
+            super(layoutResId, mapView);
+        }
+        public void onClose() {
+        }
+
+        public void onOpen(Object arg0) {
+            LinearLayout layout = (LinearLayout) mView;
+            Button btnMoreInfo = (Button) mView.findViewById(R.id.bubble_moreinfo);
+//            String mData = "";
+            TextView txtTitle = (TextView) mView.findViewById(R.id.bubble_title);
+            TextView txtDescription = (TextView) mView.findViewById(R.id.bubble_description);
+            TextView txtSubdescription = (TextView) mView.findViewById(R.id.bubble_subdescription);
+
+            txtTitle.setText("Title of my marker");
+            txtDescription.setText("Click here to view details!");
+            txtSubdescription.setText("You can also edit the subdescription");
+//            layout.setOnClickListener(new View.OnClickListener() {
+//                public void onClick(View v) {
+//                    // Override Marker's onClick behaviour here
+//                    Log.i("MYINFOWINDOW", "onClick: TESAT");
+//                }
+//            });
+        }
     }
 }
