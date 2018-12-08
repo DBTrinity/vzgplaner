@@ -12,7 +12,9 @@ import org.osmdroid.api.IMapController;
 import org.osmdroid.bonuspack.kml.KmlDocument;
 import org.osmdroid.bonuspack.kml.Style;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
@@ -45,7 +47,26 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         map = findViewById(R.id.map);
-        map.setTileSource(TileSourceFactory.MAPNIK);
+
+        // https://wiki.openstreetmap.org/wiki/Tile_servers
+
+        final ITileSource tileSource = new XYTileSource(
+                "HOT",
+                1,
+                20,
+                256,
+                ".png",
+                new String[]{
+                        // OSM B&W mapnik map grayscale
+                        "https://tiles.wmflabs.org/bw-mapnik/",
+                        "https://a.tiles.wmflabs.org/bw-mapnik/",
+                        "https://b.tiles.wmflabs.org/bw-mapnik/",
+                        "https://c.tiles.wmflabs.org/bw-mapnik/"
+                        // "http://a.tile.openstreetmap.fr/",
+                        // "http://b.tile.openstreetmap.fr/",
+                        // "http://c.tile.openstreetmap.fr/"
+                }, "© OpenStreetMap contributors");
+        map.setTileSource(tileSource);
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
 
