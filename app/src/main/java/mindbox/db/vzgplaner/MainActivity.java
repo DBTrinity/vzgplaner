@@ -7,7 +7,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.bonuspack.kml.KmlDocument;
@@ -19,13 +18,9 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
+import java.util.stream.Collectors;
 
 public class MainActivity extends Activity {
     MapView map = null;
@@ -56,7 +51,11 @@ public class MainActivity extends Activity {
 
 
         KmlDocument kmlDocument = new KmlDocument();
-        String jsonString = loadJSONFromAsset(ctx);
+
+        InputStream is = getResources().openRawResource(R.raw.railwaystationnodes);
+        String jsonString = new BufferedReader(new InputStreamReader(is)).lines()
+                .parallel().collect(Collectors.joining("\n"));
+
         kmlDocument.parseGeoJSON(jsonString);
 
         Drawable defaultMarker = getResources().getDrawable(R.drawable.marker_default);
@@ -66,7 +65,7 @@ public class MainActivity extends Activity {
 
         IMapController mapController = map.getController();
         mapController.setZoom(9.5);
-        GeoPoint startPoint = new GeoPoint(	52.520008, 	13.404954);
+        GeoPoint startPoint = new GeoPoint(52.520008, 13.404954);
         mapController.setCenter(startPoint);
 
         map.getOverlays().add(geoJsonOverlay);
@@ -89,37 +88,5 @@ public class MainActivity extends Activity {
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().save(this, prefs);
         map.onPause();  //needed for compass, my location overlays, v6.0.0 and up
-    }
-
-    public String loadJSONFromAsset(Context context) {
-        InputStream is = getResources().openRawResource(R.raw.railwaystationnodes);
-        Writer writer = new StringWriter();
-        char[] buffer = new char[1024];
-        try {
-            Reader reader = null;
-            try {
-                reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            int n;
-            try {
-                while ((n = reader.read(buffer)) != -1) {
-                    writer.write(buffer, 0, n);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        String jsonString = writer.toString();
-        Log.d("jsonString", jsonString);
-        return jsonString;
     }
 }
